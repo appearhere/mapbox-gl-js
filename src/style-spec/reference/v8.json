@@ -202,10 +202,6 @@
     "clusterMaxZoom": {
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
-    },
-    "clusterReduce": {
-      "type": "function",
-      "doc": "Reducing function for calculating custom cluster properties, interface: function (accumulated, props) { accumulated.sum += props.sum; }"
     }
   },
   "source_video": {
