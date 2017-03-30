@@ -4,6 +4,7 @@ const util = require('../util/util');
 const browser = require('../util/browser');
 const window = require('../util/window');
 const DOM = require('../util/dom');
+const ajax = require('../util/ajax');
 
 const Style = require('../style/style');
 const AnimationLoop = require('../style/animation_loop');
@@ -514,6 +515,136 @@ class Map extends Camera {
     }
 
     /**
+     * Adds a listener for events of a specified type.
+     *
+     * @method
+     * @name on
+     * @memberof Map
+     * @instance
+     * @param {string} type The event type to add a listen for.
+     * @param {Function} listener The function to be called when the event is fired.
+     *   The listener function is called with the data object passed to `fire`,
+     *   extended with `target` and `type` properties.
+     * @returns {Map} `this`
+     */
+
+    /**
+     * Adds a listener for events of a specified type occurring on features in a specified style layer.
+     *
+     * @param {string} type The event type to listen for; one of `'mousedown'`, `'mouseup'`, `'click'`, `'dblclick'`,
+     * `'mousemove'`, `'mouseenter'`, `'mouseleave'`, `'mouseover'`, `'mouseout'`, `'contextmenu'`, `'touchstart'`,
+     * `'touchend'`, or `'touchcancel'`. `mouseenter` and `mouseover` events are triggered when the cursor enters
+     * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
+     * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
+     * the map canvas.
+     * @param {string} layer The ID of a style layer. Only events whose location is within a visible
+     * feature in this layer will trigger the listener. The event will have a `features` property containing
+     * an array of the matching features.
+     * @param {Function} listener The function to be called when the event is fired.
+     * @returns {Map} `this`
+     */
+    on(type, layer, listener) {
+        if (listener === undefined) {
+            return super.on(type, layer);
+        }
+
+        const delegatedListener = (() => {
+            if (type === 'mouseenter' || type === 'mouseover') {
+                let mousein = false;
+                const mousemove = (e) => {
+                    const features = this.queryRenderedFeatures(e.point, {layers: [layer]});
+                    if (!features.length) {
+                        mousein = false;
+                    } else if (!mousein) {
+                        mousein = true;
+                        listener.call(this, util.extend({features}, e, {type}));
+                    }
+                };
+                const mouseout = () => {
+                    mousein = false;
+                };
+                return {layer, listener, delegates: {mousemove, mouseout}};
+            } else if (type === 'mouseleave' || type === 'mouseout') {
+                let mousein = false;
+                const mousemove = (e) => {
+                    const features = this.queryRenderedFeatures(e.point, {layers: [layer]});
+                    if (features.length) {
+                        mousein = true;
+                    } else if (mousein) {
+                        mousein = false;
+                        listener.call(this, util.extend({}, e, {type}));
+                    }
+                };
+                const mouseout = (e) => {
+                    if (mousein) {
+                        mousein = false;
+                        listener.call(this, util.extend({}, e, {type}));
+                    }
+                };
+                return {layer, listener, delegates: {mousemove, mouseout}};
+            } else {
+                const delegate = (e) => {
+                    const features = this.queryRenderedFeatures(e.point, {layers: [layer]});
+                    if (features.length) {
+                        listener.call(this, util.extend({features}, e));
+                    }
+                };
+                return {layer, listener, delegates: {[type]: delegate}};
+            }
+        })();
+
+        this._delegatedListeners = this._delegatedListeners || {};
+        this._delegatedListeners[type] = this._delegatedListeners[type] || [];
+        this._delegatedListeners[type].push(delegatedListener);
+
+        for (const event in delegatedListener.delegates) {
+            this.on(event, delegatedListener.delegates[event]);
+        }
+
+        return this;
+    }
+
+    /**
+     * Removes an event listener previously added with `Map#on`.
+     *
+     * @method
+     * @name off
+     * @memberof Map
+     * @instance
+     * @param {string} type The event type previously used to install the listener.
+     * @param {Function} listener The function previously installed as a listener.
+     * @returns {Map} `this`
+     */
+
+    /**
+     * Removes an event listener for layer-specific events previously added with `Map#on`.
+     *
+     * @param {string} type The event type previously used to install the listener.
+     * @param {string} layer The layer ID previously used to install the listener.
+     * @param {Function} listener The function previously installed as a listener.
+     * @returns {Map} `this`
+     */
+    off(type, layer, listener) {
+        if (listener === undefined) {
+            return super.off(type, layer);
+        }
+
+        if (this._delegatedListeners && this._delegatedListeners[type]) {
+            const listeners = this._delegatedListeners[type];
+            for (let i = 0; i < listeners.length; i++) {
+                const delegatedListener = listeners[i];
+                if (delegatedListener.layer === layer && delegatedListener.listener === listener) {
+                    for (const event in delegatedListener.delegates) {
+                        this.off(event, delegatedListener.delegates[event]);
+                    }
+                    listeners.splice(i, 1);
+                    return this;
+                }
+            }
+        }
+    }
+
+    /**
      * Returns an array of [GeoJSON](http://geojson.org/)
      * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects)
      * representing visible features that satisfy the query parameters.
@@ -598,6 +729,10 @@ class Map extends Camera {
             geometry = arguments[0];
         } else if (arguments.length === 1) {
             params = arguments[0];
+        }
+
+        if (!this.style) {
+            return [];
         }
 
         return this.style.queryRenderedFeatures(
@@ -823,6 +958,8 @@ class Map extends Camera {
      * {@link Map#error} event will be fired if there is not enough space in the
      * sprite to add this image.
      *
+     * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
+     * @see [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
      * @param {string} name The name of the image.
      * @param {HTMLImageElement|ArrayBufferView} image The image as an `HTMLImageElement` or `ArrayBufferView` (using the format of [`ImageData#data`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/data))
      * @param {Object} [options] Required if and only if passing an `ArrayBufferView`
@@ -841,6 +978,18 @@ class Map extends Camera {
      */
     removeImage(name) {
         this.style.spriteAtlas.removeImage(name);
+    }
+
+    /**
+     * Load an image from an external URL for use with `Map#addImage`. External
+     * domains must support [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
+     *
+     * @param {string} url The URL of the image.
+     * @param {Function} callback Called when the image has loaded or with an error argument if there is an error.
+     * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
+     */
+    loadImage(url, callback) {
+        ajax.getImage(url, callback);
     }
 
     /**

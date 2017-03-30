@@ -1093,7 +1093,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-font": {
@@ -1394,7 +1396,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-offset": {
@@ -1404,6 +1408,7 @@
       "units": "ems",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "length": 2,
       "default": [
         0,
@@ -1419,7 +1424,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "text-allow-overlap": {
@@ -2000,6 +2007,7 @@
       "property-function": true,
       "default": 0,
       "minimum": 0,
+      "maximum": 65535,
       "units": "meters",
       "doc": "The height with which to extrude this layer.",
       "transition": true,
@@ -2019,6 +2027,7 @@
       "property-function": true,
       "default": 0,
       "minimum": 0,
+      "maximum": 65535,
       "units": "meters",
       "doc": "The height with which to extrude the base of this layer. Must be less than or equal to `fill-extrusion-height`.",
       "transition": true,
@@ -2491,7 +2500,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "icon-color": {
@@ -2512,7 +2523,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "icon-halo-color": {
@@ -2533,7 +2546,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "icon-halo-width": {
@@ -2556,7 +2571,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "icon-halo-blur": {
@@ -2579,7 +2596,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "icon-translate": {
@@ -2656,7 +2675,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-color": {
@@ -2677,7 +2698,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-halo-color": {
@@ -2698,7 +2721,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-halo-width": {
@@ -2721,7 +2746,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-halo-blur": {
@@ -2744,7 +2771,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-translate": {
