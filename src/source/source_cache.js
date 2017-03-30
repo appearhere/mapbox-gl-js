@@ -291,7 +291,12 @@ class SourceCache extends Evented {
         const heightInTiles = Math.ceil(transform.height / transform.tileSize) + 1;
         const approxTilesInView = widthInTiles * heightInTiles;
         const commonZoomRange = 5;
-        this._cache.setMaxSize(Math.floor(approxTilesInView * commonZoomRange));
+        const idealSize = Math.floor(approxTilesInView * commonZoomRange);
+        const ios = /iP(hone|od|ad)/.test(navigator.userAgent);
+
+        // Constrain cache on iOS devices
+        const maxSize = ios ? 8 : idealSize;
+        this._cache.setMaxSize(maxSize);
     }
 
     /**
