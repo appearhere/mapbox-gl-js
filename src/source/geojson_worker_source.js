@@ -136,7 +136,8 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                     const ids = accumulated.markerids || [];
 
                     if (props.markerids) {
-                        accumulated.markerids = ids.concat(props.markerids);
+                        ids.push(props.markerids);
+                        accumulated.markerids = ids;
                     } else {
                         accumulated.markerids = ids.concat(props.id);
                     }
