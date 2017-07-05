@@ -140,7 +140,11 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                         accumulated.markerids = ids;
                     } else {
                         accumulated.markerids = ids.concat(props.id);
-                    }
+                    };
+
+                    if (props.highlighted === true) {
+                        accumulated.highlighted = true;
+                    };
                 };
 
                 callback(null, supercluster(params.superclusterOptions).load(data.features));
