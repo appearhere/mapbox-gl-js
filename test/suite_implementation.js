@@ -43,15 +43,12 @@ module.exports = function(style, options, _callback) {
     map.repaint = true;
 
     if (options.debug) map.showTileBoundaries = true;
+    if (options.collisionDebug) map.showCollisionBoxes = true;
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
 
     const gl = map.painter.gl;
 
     map.once('load', () => {
-        if (options.collisionDebug) {
-            map.showCollisionBoxes = true;
-            options.operations = [["wait"]];
-        }
         applyOperations(map, options.operations, () => {
             const w = options.width * window.devicePixelRatio;
             const h = options.height * window.devicePixelRatio;
@@ -107,8 +104,7 @@ function applyOperations(map, operations, callback) {
 
     } else if (operation[0] === 'addImage') {
         const img = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
-        const pixelRatio = operation.length > 3 ? operation[3] : 1;
-        map.addImage(operation[1], img.data, {height: img.height, width: img.width, pixelRatio: pixelRatio});
+        map.addImage(operation[1], img.data, {height: img.height, width: img.width, pixelRatio: 1});
         applyOperations(map, operations.slice(1), callback);
 
     } else {

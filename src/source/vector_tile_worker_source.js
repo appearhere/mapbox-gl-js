@@ -39,8 +39,6 @@ class VectorTileWorkerSource {
      * @param {number} params.overscaling
      * @param {number} params.angle
      * @param {number} params.pitch
-     * @param {number} params.cameraToCenterDistance
-     * @param {number} params.cameraToTileDistance
      * @param {boolean} params.showCollisionBoxes
      */
     loadTile(params, callback) {
@@ -186,7 +184,7 @@ class VectorTileWorkerSource {
 
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
-            const result = workerTile.redoPlacement(params.angle, params.pitch, params.cameraToCenterDistance, params.cameraToTileDistance, params.showCollisionBoxes);
+            const result = workerTile.redoPlacement(params.angle, params.pitch, params.showCollisionBoxes);
 
             if (result.result) {
                 callback(null, result.result, result.transferables);

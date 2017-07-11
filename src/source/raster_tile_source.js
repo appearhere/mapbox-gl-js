@@ -5,7 +5,6 @@ const ajax = require('../util/ajax');
 const Evented = require('../util/evented');
 const loadTileJSON = require('./load_tilejson');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
-const TileBounds = require('./tile_bounds');
 
 class RasterTileSource extends Evented {
 
@@ -33,8 +32,6 @@ class RasterTileSource extends Evented {
                 return this.fire('error', err);
             }
             util.extend(this, tileJSON);
-            this.setBounds(tileJSON.bounds);
-
 
             // `content` is included here to prevent a race condition where `Style#_updateSources` is called
             // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
@@ -50,25 +47,13 @@ class RasterTileSource extends Evented {
         this.map = map;
     }
 
-    setBounds(bounds) {
-        this.bounds = bounds;
-        if (bounds) {
-            this.tileBounds = new TileBounds(bounds, this.minzoom, this.maxzoom);
-        }
-    }
-
     serialize() {
         return {
             type: 'raster',
             url: this.url,
             tileSize: this.tileSize,
-            tiles: this.tiles,
-            bounds: this.bounds,
+            tiles: this.tiles
         };
-    }
-
-    hasTile(coord) {
-        return !this.tileBounds || this.tileBounds.contains(coord, this.maxzoom);
     }
 
     loadTile(tile, callback) {
@@ -89,7 +74,7 @@ class RasterTileSource extends Evented {
                 return callback(err);
             }
 
-            if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
+            if (!this.map._refreshExpiredTiles) tile.setExpiryData(img);
             delete img.cacheControl;
             delete img.expires;
 

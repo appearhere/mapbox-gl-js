@@ -1,6 +1,7 @@
 'use strict';
 
 const Bucket = require('../bucket');
+const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
@@ -40,10 +41,10 @@ const LINE_DISTANCE_SCALE = 1 / 2;
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
 const lineInterface = {
-    layoutAttributes: [
+    layoutVertexArrayType: createVertexArrayType([
         {name: 'a_pos',  components: 2, type: 'Int16'},
         {name: 'a_data', components: 4, type: 'Uint8'}
-    ],
+    ]),
     paintAttributes: [
         {property: 'line-color', type: 'Uint8'},
         {property: 'line-blur', multiplier: 10, type: 'Uint8'},
@@ -96,14 +97,10 @@ class LineBucket extends Bucket {
         const featureProperties = feature.properties;
         const isPolygon = VectorTileFeature.types[feature.type] === 'Polygon';
 
-        // If the line has duplicate vertices at the ends, adjust start/length to remove them.
+        // If the line has duplicate vertices at the end, adjust length to remove them.
         let len = vertices.length;
         while (len >= 2 && vertices[len - 1].equals(vertices[len - 2])) {
             len--;
-        }
-        let first = 0;
-        while (first < len - 1 && vertices[first].equals(vertices[first + 1])) {
-            first++;
         }
 
         // Ignore invalid geometry.
@@ -113,7 +110,7 @@ class LineBucket extends Bucket {
 
         const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
 
-        const firstVertex = vertices[first];
+        const firstVertex = vertices[0];
         const arrays = this.arrays;
 
         // we could be more precise, but it would only save a negligible amount of space
@@ -134,10 +131,10 @@ class LineBucket extends Bucket {
             nextNormal = firstVertex.sub(currentVertex)._unit()._perp();
         }
 
-        for (let i = first; i < len; i++) {
+        for (let i = 0; i < len; i++) {
 
             nextVertex = isPolygon && i === len - 1 ?
-                vertices[first + 1] : // if the line is closed, we treat the last vertex like the first
+                vertices[1] : // if the line is closed, we treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
 
             // if two consecutive vertices exist, skip the current one
@@ -185,7 +182,7 @@ class LineBucket extends Bucket {
 
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
 
-            if (isSharpCorner && i > first) {
+            if (isSharpCorner && i > 0) {
                 const prevSegmentLength = currentVertex.dist(prevVertex);
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());

@@ -512,12 +512,9 @@ class Style extends Evented {
     }
 
     /**
-     * Remove the layer with the given id from the style.
-     *
-     * If no such layer exists, an `error` event is fired.
-     *
+     * Remove a layer from this stylesheet, given its id.
      * @param {string} id id of the layer to remove
-     * @fires error
+     * @throws {Error} if no layer is found with the given ID
      */
     removeLayer(id) {
         this._checkLoaded();

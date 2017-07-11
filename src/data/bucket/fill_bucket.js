@@ -1,6 +1,7 @@
 'use strict';
 
 const Bucket = require('../bucket');
+const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const earcut = require('earcut');
@@ -9,9 +10,9 @@ const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
 
 const fillInterface = {
-    layoutAttributes: [
+    layoutVertexArrayType: createVertexArrayType([
         {name: 'a_pos', components: 2, type: 'Int16'}
-    ],
+    ]),
     elementArrayType: createElementArrayType(3),
     elementArrayType2: createElementArrayType(2),
 

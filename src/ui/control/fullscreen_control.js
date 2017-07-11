@@ -54,14 +54,8 @@ class FullscreenControl {
         return this._fullscreen;
     }
 
-    _changeIcon() {
-        const fullscreenElement =
-            window.document.fullscreenElement ||
-            window.document.mozFullScreenElement ||
-            window.document.webkitFullscreenElement ||
-            window.document.msFullscreenElement;
-
-        if ((fullscreenElement === this._mapContainer) !== this._fullscreen) {
+    _changeIcon(e) {
+        if (e.target === this._mapContainer) {
             this._fullscreen = !this._fullscreen;
             const className = 'mapboxgl-ctrl';
             this._fullscreenButton.classList.toggle(`${className}-shrink`);

@@ -17,8 +17,6 @@ class WorkerTile {
         this.overscaling = params.overscaling;
         this.angle = params.angle;
         this.pitch = params.pitch;
-        this.cameraToCenterDistance = params.cameraToCenterDistance;
-        this.cameraToTileDistance = params.cameraToTileDistance;
         this.showCollisionBoxes = params.showCollisionBoxes;
     }
 
@@ -128,7 +126,7 @@ class WorkerTile {
         }
 
         if (this.symbolBuckets.length === 0) {
-            return done(new CollisionTile(this.angle, this.pitch, this.cameraToCenterDistance, this.cameraToTileDistance, this.collisionBoxArray));
+            return done(new CollisionTile(this.angle, this.pitch, this.collisionBoxArray));
         }
 
         let deps = 0;
@@ -139,11 +137,7 @@ class WorkerTile {
             if (err) return callback(err);
             deps++;
             if (deps === 2) {
-                const collisionTile = new CollisionTile(this.angle,
-                                                        this.pitch,
-                                                        this.cameraToCenterDistance,
-                                                        this.cameraToTileDistance,
-                                                        this.collisionBoxArray);
+                const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
 
                 for (const bucket of this.symbolBuckets) {
                     recalculateLayers(bucket, this.zoom);
@@ -175,21 +169,15 @@ class WorkerTile {
         }
     }
 
-    redoPlacement(angle, pitch, cameraToCenterDistance, cameraToTileDistance, showCollisionBoxes) {
+    redoPlacement(angle, pitch, showCollisionBoxes) {
         this.angle = angle;
         this.pitch = pitch;
-        this.cameraToCenterDistance = cameraToCenterDistance;
-        this.cameraToTileDistance = cameraToTileDistance;
 
         if (this.status !== 'done') {
             return {};
         }
 
-        const collisionTile = new CollisionTile(this.angle,
-                                                this.pitch,
-                                                this.cameraToCenterDistance,
-                                                this.cameraToTileDistance,
-                                                this.collisionBoxArray);
+        const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
 
         for (const bucket of this.symbolBuckets) {
             recalculateLayers(bucket, this.zoom);

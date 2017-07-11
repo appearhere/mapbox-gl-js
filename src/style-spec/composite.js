@@ -3,7 +3,6 @@
 module.exports = function (style) {
     const styleIDs = [];
     const sourceIDs = [];
-    const compositedSourceLayers = [];
 
     for (const id in style.sources) {
         const source = style.sources[id];
@@ -36,14 +35,6 @@ module.exports = function (style) {
     style.layers.forEach((layer) => {
         if (styleIDs.indexOf(layer.source) >= 0) {
             layer.source = compositeID;
-
-            if ('source-layer' in layer) {
-                if (compositedSourceLayers.indexOf(layer['source-layer']) >= 0) {
-                    throw new Error('Conflicting source layer names');
-                } else {
-                    compositedSourceLayers.push(layer['source-layer']);
-                }
-            }
         }
     });
 

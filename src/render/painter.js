@@ -36,7 +36,12 @@ class Painter {
     constructor(gl, transform) {
         this.gl = gl;
         this.transform = transform;
-        this._tileTextures = {};
+
+        this.reusableTextures = {
+            tiles: {},
+            viewport: null
+        };
+        this.preFbos = {};
 
         this.frameHistory = new FrameHistory();
 
@@ -63,15 +68,6 @@ class Painter {
         this.width = width * browser.devicePixelRatio;
         this.height = height * browser.devicePixelRatio;
         gl.viewport(0, 0, this.width, this.height);
-
-        if (this.viewportTexture) {
-            this.gl.deleteTexture(this.viewportTexture);
-            this.viewportTexture = null;
-        }
-        if (this.viewportFbo) {
-            this.gl.deleteFramebuffer(this.viewportFbo);
-            this.viewportFbo = null;
-        }
     }
 
     setup() {
@@ -162,7 +158,8 @@ class Painter {
         gl.disable(gl.DEPTH_TEST);
         gl.enable(gl.STENCIL_TEST);
 
-        gl.stencilMask(0xFF);
+        // Only write clipping IDs to the last 5 bits. The first three are used for drawing fills.
+        gl.stencilMask(0xF8);
         // Tests will always pass, and ref value will be written to stencil buffer.
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
@@ -170,9 +167,9 @@ class Painter {
         this._tileClippingMaskIDs = {};
 
         for (const coord of coords) {
-            const id = this._tileClippingMaskIDs[coord.id] = idNext++;
+            const id = this._tileClippingMaskIDs[coord.id] = (idNext++) << 3;
 
-            gl.stencilFunc(gl.ALWAYS, id, 0xFF);
+            gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
             const program = this.useProgram('fill', this.basicFillProgramConfiguration);
             gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
@@ -190,11 +187,16 @@ class Painter {
 
     enableTileClippingMask(coord) {
         const gl = this.gl;
-        gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xFF);
+        gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xF8);
     }
 
     // Overridden by headless tests.
     prepareBuffers() {}
+
+    bindDefaultFramebuffer() {
+        const gl = this.gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
 
     render(style, options) {
         this.style = style;
@@ -316,17 +318,34 @@ class Painter {
     }
 
     saveTileTexture(texture) {
-        const textures = this._tileTextures[texture.size];
+        const textures = this.reusableTextures.tiles[texture.size];
         if (!textures) {
-            this._tileTextures[texture.size] = [texture];
+            this.reusableTextures.tiles[texture.size] = [texture];
         } else {
             textures.push(texture);
         }
     }
 
+    saveViewportTexture(texture) {
+        this.reusableTextures.viewport = texture;
+    }
+
     getTileTexture(size) {
-        const textures = this._tileTextures[size];
+        const textures = this.reusableTextures.tiles[size];
         return textures && textures.length > 0 ? textures.pop() : null;
+    }
+
+    getViewportTexture(width, height) {
+        const texture = this.reusableTextures.viewport;
+        if (!texture) return;
+
+        if (texture.width === width && texture.height === height) {
+            return texture;
+        } else {
+            this.gl.deleteTexture(texture);
+            this.reusableTextures.viewport = null;
+            return;
+        }
     }
 
     lineWidth(width) {
@@ -374,15 +393,6 @@ class Painter {
         gl.compileShader(vertexShader);
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
         gl.attachShader(program, vertexShader);
-
-        // Manually bind layout attributes in the order defined by their
-        // ProgramInterface so that we don't dynamically link an unused
-        // attribute at position 0, which can cause rendering to fail for an
-        // entire layer (see #4607, #4728)
-        const layoutAttributes = configuration.interface.layoutAttributes || [];
-        for (let i = 0; i < layoutAttributes.length; i++) {
-            gl.bindAttribLocation(program, i, layoutAttributes[i].name);
-        }
 
         gl.linkProgram(program);
         assert(gl.getProgramParameter(program, gl.LINK_STATUS), gl.getProgramInfoLog(program));

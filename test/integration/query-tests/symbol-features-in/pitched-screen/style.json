@@ -2,21 +2,17 @@
   "version": 8,
   "metadata": {
     "test": {
-      "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/8967"
-      },
       "collisionDebug": true,
-      "debug": true,
-      "width": 1000,
-      "height": 1000,
+      "width": 500,
+      "height": 500,
       "queryGeometry": [
           [
-              100,
-              85
+              0,
+              0
           ],
           [
-              850,
-              400
+              500,
+              500
           ]
       ]
     }
@@ -34,7 +30,6 @@
       "data": "local://data/121points.geojson"
     }
   },
-  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sprite": "local://sprites/sprite",
   "layers": [
     {
@@ -43,13 +38,7 @@
       "source": "geojson",
       "layout": {
         "symbol-placement": "point",
-        "icon-image": "bicycle-12",
-        "text-field": "A lot of test text so that the collision box is big",
-        "text-max-width": 10,
-        "text-font": [
-          "Open Sans Semibold",
-          "Arial Unicode MS Bold"
-        ]
+        "icon-image": "bicycle-12"
       },
       "interactive": true
     }

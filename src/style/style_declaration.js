@@ -3,10 +3,6 @@
 const createFunction = require('../style-spec/function');
 const util = require('../util/util');
 
-/**
- * A style property declaration
- * @private
- */
 class StyleDeclaration {
 
     constructor(reference, value) {
@@ -32,20 +28,13 @@ class StyleDeclaration {
                 }
             }
 
-            this._functionInterpolationT = createFunction({
+            this.functionInterpolationT = createFunction({
                 type: 'exponential',
                 stops: interpolationAmountStops,
                 base: value.base
             }, {
                 type: 'number'
             });
-        } else if (!this.isZoomConstant) {
-            this.stopZoomLevels = [];
-            for (const stop of this.value.stops) {
-                if (this.stopZoomLevels.indexOf(stop[0]) < 0) {
-                    this.stopZoomLevels.push(stop[0]);
-                }
-            }
         }
     }
 
@@ -57,18 +46,8 @@ class StyleDeclaration {
         return value;
     }
 
-    /**
-     * Given a zoom level, calculate a possibly-fractional "index" into the
-     * composite function stops array, intended to be used for interpolating
-     * between paint values that have been evaluated at the surrounding stop
-     * values.
-     *
-     * Only valid for composite functions.
-     * @private
-     */
-    calculateInterpolationT(globalProperties) {
-        if (this.isFeatureConstant || this.isZoomConstant) return 0;
-        return this._functionInterpolationT(globalProperties && globalProperties.zoom, {});
+    calculateInterpolationT(globalProperties, featureProperties) {
+        return this.functionInterpolationT(globalProperties && globalProperties.zoom, featureProperties || {});
     }
 }
 

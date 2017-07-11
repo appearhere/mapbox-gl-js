@@ -237,7 +237,7 @@ class DragRotateHandler {
 module.exports = DragRotateHandler;
 
 /**
- * Fired when a "drag to rotate" interaction starts. See {@link DragRotateHandler}.
+ * Fired when a "drag to rotate" interaction starts. See [`DragRotateHandler`](#DragRotateHandler).
  *
  * @event rotatestart
  * @memberof Map
@@ -246,7 +246,7 @@ module.exports = DragRotateHandler;
  */
 
 /**
- * Fired repeatedly during a "drag to rotate" interaction. See {@link DragRotateHandler}.
+ * Fired repeatedly during a "drag to rotate" interaction. See [`DragRotateHandler`](#DragRotateHandler).
  *
  * @event rotate
  * @memberof Map
@@ -255,7 +255,7 @@ module.exports = DragRotateHandler;
  */
 
 /**
- * Fired when a "drag to rotate" interaction ends. See {@link DragRotateHandler}.
+ * Fired when a "drag to rotate" interaction ends. See [`DragRotateHandler`](#DragRotateHandler).
  *
  * @event rotateend
  * @memberof Map

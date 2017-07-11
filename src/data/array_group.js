@@ -1,7 +1,6 @@
 'use strict';
 
 const ProgramConfiguration = require('./program_configuration');
-const createVertexArrayType = require('./vertex_array_type');
 
 class Segment {
     constructor(vertexOffset, primitiveOffset) {
@@ -35,7 +34,7 @@ class ArrayGroup {
     constructor(programInterface, layers, zoom) {
         this.globalProperties = {zoom};
 
-        const LayoutVertexArrayType = createVertexArrayType(programInterface.layoutAttributes);
+        const LayoutVertexArrayType = programInterface.layoutVertexArrayType;
         this.layoutVertexArray = new LayoutVertexArrayType();
 
         const ElementArrayType = programInterface.elementArrayType;
@@ -47,7 +46,7 @@ class ArrayGroup {
         this.layerData = {};
         for (const layer of layers) {
             const programConfiguration = ProgramConfiguration.createDynamic(
-                programInterface, layer, zoom);
+                programInterface.paintAttributes || [], layer, zoom);
             this.layerData[layer.id] = {
                 layer: layer,
                 programConfiguration: programConfiguration,
