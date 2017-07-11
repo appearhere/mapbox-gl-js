@@ -2,6 +2,7 @@
 
 const test = require('mapbox-gl-js-test').test;
 const Bucket = require('../../../src/data/bucket');
+const createVertexArrayType = require('../../../src/data/vertex_array_type');
 const createElementArrayType = require('../../../src/data/element_array_type');
 const FeatureIndex = require('../../../src/data/feature_index');
 const StyleLayer = require('../../../src/style/style_layer');
@@ -33,11 +34,11 @@ test('Bucket', (t) => {
         options = options || {};
 
         const programInterface = {
-            layoutAttributes: options.layoutAttributes || [{
+            layoutVertexArrayType: createVertexArrayType(options.layoutAttributes || [{
                 name: 'a_box',
                 components: 2,
                 type: 'Int16'
-            }],
+            }]),
             elementArrayType: createElementArrayType(),
             elementArrayType2: createElementArrayType(2),
 

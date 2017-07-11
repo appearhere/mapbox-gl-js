@@ -18,7 +18,6 @@ rm -rf coverage .nyc_output
 # run linters
 npm run lint
 npm run lint-docs
-npm run lint-css
 
 # build and run build tests
 npm run build-min

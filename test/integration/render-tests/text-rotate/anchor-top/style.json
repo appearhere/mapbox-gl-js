@@ -2,31 +2,50 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 64,
-      "height": 64
+      "height": 256
     }
   },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 14,
   "sources": {
-    "geojson": {
-      "type": "geojson",
-      "data": {
-        "type": "Point",
-        "coordinates": [
-          0,
-          0
-        ]
-      }
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
     }
   },
   "sprite": "local://sprites/sprite",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
-      "id": "symbol",
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "anchor-top",
       "type": "symbol",
-      "source": "geojson",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "filter": [
+        "==",
+        "maki",
+        "restaurant"
+      ],
       "layout": {
+        "symbol-placement": "point",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
         "icon-image": "dot.sdf",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
         "text-field": "Test",
         "text-font": [
           "Open Sans Semibold",
@@ -34,6 +53,10 @@
         ],
         "text-rotate": 45,
         "text-anchor": "top"
+      },
+      "paint": {
+        "icon-opacity": 1,
+        "text-opacity": 1
       }
     }
   ]

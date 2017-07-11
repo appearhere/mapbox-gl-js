@@ -53,24 +53,18 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
  * @param {StyleLayer} layer
  * @param {boolean} alongLine Whether the icon should be placed along the line.
  * @param {Shaping} shapedText Shaping for corresponding text
- * @param {Object} globalProperties
- * @param {Object} featureProperties
  * @returns {Array<SymbolQuad>}
  * @private
  */
 function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shapedText, globalProperties, featureProperties) {
-    const image = shapedIcon.image;
+    const rect = shapedIcon.image.rect;
     const layout = layer.layout;
 
-    // If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
-    // pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
-    // on one edge in some cases.
     const border = 1;
-
-    const top = shapedIcon.top - border / image.pixelRatio;
-    const left = shapedIcon.left - border / image.pixelRatio;
-    const bottom = shapedIcon.bottom + border / image.pixelRatio;
-    const right = shapedIcon.right + border / image.pixelRatio;
+    const left = shapedIcon.left - border;
+    const right = left + rect.w / shapedIcon.image.pixelRatio;
+    const top = shapedIcon.top - border;
+    const bottom = top + rect.h / shapedIcon.image.pixelRatio;
     let tl, tr, br, bl;
 
     // text-fit mode
@@ -126,15 +120,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
         br = br.matMult(matrix);
     }
 
-    // Icon quad is padded, so texture coordinates also need to be padded.
-    const textureRect = {
-        x: image.textureRect.x - border,
-        y: image.textureRect.y - border,
-        w: image.textureRect.w + border * 2,
-        h: image.textureRect.h + border * 2
-    };
-
-    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, textureRect, 0, 0, minScale, Infinity)];
+    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, 0, 0, minScale, Infinity)];
 }
 
 /**
@@ -146,22 +132,16 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
  * @param {Array<Array<Point>>} line
  * @param {StyleLayer} layer
  * @param {boolean} alongLine Whether the label should be placed along the line.
- * @param {Object} globalProperties
- * @param {Object} featureProperties
  * @returns {Array<SymbolQuad>}
  * @private
  */
-function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, globalProperties, featureProperties) {
+function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
 
-    const oneEm = 24;
-    const textRotate = layer.getLayoutValue('text-rotate', globalProperties, featureProperties) * Math.PI / 180;
+    const textRotate = layer.layout['text-rotate'] * Math.PI / 180;
     const keepUpright = layer.layout['text-keep-upright'];
-    const textOffset = layer.getLayoutValue('text-offset', globalProperties, featureProperties).map((t)=> t * oneEm);
 
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
-
-    let labelMinScale = minScale;
 
     for (let k = 0; k < positionedGlyphs.length; k++) {
         const positionedGlyph = positionedGlyphs[k];
@@ -174,11 +154,12 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
         const centerX = (positionedGlyph.x + glyph.advance / 2) * boxScale;
 
         let glyphInstances;
+        let labelMinScale = minScale;
         if (alongLine) {
             glyphInstances = [];
-            labelMinScale = Math.max(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false));
+            labelMinScale = getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false);
             if (keepUpright) {
-                labelMinScale = Math.max(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true));
+                labelMinScale = Math.min(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true));
             }
 
         } else {
@@ -191,23 +172,32 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
             }];
         }
 
-        const baseQuad = {
-            upright: calculateBaseQuad(positionedGlyph, glyph, rect, textOffset),
-            // The quad coordinates represent an offset from the anchor.  Since
-            // we use the same anchor for both the 'upright' and 'upside-down'
-            // copies of each glyph, invert the y dimension of text-offset for the
-            // upside-down case.
-            upsideDown: calculateBaseQuad(positionedGlyph, glyph, rect, [textOffset[0], -textOffset[1]])
-        };
+        const x1 = positionedGlyph.x + glyph.left;
+        const y1 = positionedGlyph.y - glyph.top;
+        const x2 = x1 + rect.w;
+        const y2 = y1 + rect.h;
+
+        const center = new Point(positionedGlyph.x, glyph.advance / 2);
+
+        const otl = new Point(x1, y1);
+        const otr = new Point(x2, y1);
+        const obl = new Point(x1, y2);
+        const obr = new Point(x2, y2);
+
+        if (positionedGlyph.angle !== 0) {
+            otl._sub(center)._rotate(positionedGlyph.angle)._add(center);
+            otr._sub(center)._rotate(positionedGlyph.angle)._add(center);
+            obl._sub(center)._rotate(positionedGlyph.angle)._add(center);
+            obr._sub(center)._rotate(positionedGlyph.angle)._add(center);
+        }
 
         for (let i = 0; i < glyphInstances.length; i++) {
 
             const instance = glyphInstances[i];
-            const base = baseQuad[instance.upsideDown ? 'upsideDown' : 'upright'];
-            let tl = base.tl,
-                tr = base.tr,
-                bl = base.bl,
-                br = base.br;
+            let tl = otl,
+                tr = otr,
+                bl = obl,
+                br = obr;
 
             if (textRotate) {
                 const sin = Math.sin(textRotate),
@@ -232,30 +222,6 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
 
     return quads;
 }
-
-function calculateBaseQuad(positionedGlyph, glyph, rect, offset) {
-    const x1 = positionedGlyph.x + glyph.left + offset[0];
-    const y1 = positionedGlyph.y - glyph.top + offset[1];
-    const x2 = x1 + rect.w;
-    const y2 = y1 + rect.h;
-
-    const center = new Point(positionedGlyph.x, glyph.advance / 2);
-
-    const tl = new Point(x1, y1);
-    const tr = new Point(x2, y1);
-    const bl = new Point(x1, y2);
-    const br = new Point(x2, y2);
-
-    if (positionedGlyph.angle !== 0) {
-        tl._sub(center)._rotate(positionedGlyph.angle)._add(center);
-        tr._sub(center)._rotate(positionedGlyph.angle)._add(center);
-        bl._sub(center)._rotate(positionedGlyph.angle)._add(center);
-        br._sub(center)._rotate(positionedGlyph.angle)._add(center);
-    }
-
-    return { tl, tr, bl, br };
-}
-
 
 /**
  * We can only render glyph quads that slide along a straight line. To draw

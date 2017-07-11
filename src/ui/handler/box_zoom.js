@@ -52,14 +52,7 @@ class BoxZoomHandler {
      */
     enable() {
         if (this.isEnabled()) return;
-
-        // the event listeners for the DragPanHandler have to fire _after_ the event listener for BoxZoomHandler in order,
-        // for the DragPanHandler's check on map.boxZoom.isActive() to tell whether or not to ignore a keydown event
-        // so this makes sure the firing order is preserved if the BoxZoomHandler is enabled after the DragPanHandler.
-        if (this._map.dragPan) this._map.dragPan.disable();
         this._el.addEventListener('mousedown', this._onMouseDown, false);
-        if (this._map.dragPan) this._map.dragPan.enable();
-
         this._enabled = true;
     }
 
@@ -167,7 +160,7 @@ module.exports = BoxZoomHandler;
  */
 
 /**
- * Fired when a "box zoom" interaction starts. See {@link BoxZoomHandler}.
+ * Fired when a "box zoom" interaction starts. See [`BoxZoomHandler`](#BoxZoomHandler).
  *
  * @event boxzoomstart
  * @memberof Map
@@ -176,7 +169,7 @@ module.exports = BoxZoomHandler;
  */
 
 /**
- * Fired when a "box zoom" interaction ends.  See {@link BoxZoomHandler}.
+ * Fired when a "box zoom" interaction ends.  See [`BoxZoomHandler`](#BoxZoomHandler).
  *
  * @event boxzoomend
  * @memberof Map
@@ -187,7 +180,7 @@ module.exports = BoxZoomHandler;
 
 /**
  * Fired when the user cancels a "box zoom" interaction, or when the bounding box does not meet the minimum size threshold.
- * See {@link BoxZoomHandler}.
+ * See [`BoxZoomHandler`](#BoxZoomHandler).
  *
  * @event boxzoomcancel
  * @memberof Map

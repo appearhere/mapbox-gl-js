@@ -3,7 +3,6 @@
 const util = require('../util/util');
 const Buffer = require('./buffer');
 const ProgramConfiguration = require('./program_configuration');
-const createVertexArrayType = require('./vertex_array_type');
 const VertexArrayObject = require('../render/vertex_array_object');
 
 /**
@@ -14,9 +13,8 @@ const VertexArrayObject = require('../render/vertex_array_object');
  */
 class BufferGroup {
     constructor(programInterface, layers, zoom, arrays) {
-        const LayoutVertexArrayType = createVertexArrayType(programInterface.layoutAttributes);
         this.layoutVertexBuffer = new Buffer(arrays.layoutVertexArray,
-            LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
+            programInterface.layoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
 
         if (arrays.elementArray) {
             this.elementBuffer = new Buffer(arrays.elementArray,
@@ -31,7 +29,7 @@ class BufferGroup {
         this.layerData = {};
         for (const layer of layers) {
             const array = arrays.paintVertexArrays && arrays.paintVertexArrays[layer.id];
-            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
+            const programConfiguration = ProgramConfiguration.createDynamic(programInterface.paintAttributes || [], layer, zoom);
             const paintVertexBuffer = array ? new Buffer(array.array, array.type, Buffer.BufferType.VERTEX) : null;
             this.layerData[layer.id] = {programConfiguration, paintVertexBuffer};
         }

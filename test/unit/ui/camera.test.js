@@ -727,44 +727,6 @@ test('camera', (t) => {
             });
         });
 
-        t.test('pans eastward across the antimeridian', (t) => {
-            const camera = createCamera();
-            camera.setCenter([170, 0]);
-            let crossedAntimeridian;
-
-            camera.on('move', () => {
-                if (camera.getCenter().lng > 170) {
-                    crossedAntimeridian = true;
-                }
-            });
-
-            camera.on('moveend', () => {
-                t.ok(crossedAntimeridian);
-                t.end();
-            });
-
-            camera.easeTo({ center: [-170, 0], duration: 10 });
-        });
-
-        t.test('pans westward across the antimeridian', (t) => {
-            const camera = createCamera();
-            camera.setCenter([-170, 0]);
-            let crossedAntimeridian;
-
-            camera.on('move', () => {
-                if (camera.getCenter().lng < -170) {
-                    crossedAntimeridian = true;
-                }
-            });
-
-            camera.on('moveend', () => {
-                t.ok(crossedAntimeridian);
-                t.end();
-            });
-
-            camera.easeTo({ center: [170, 0], duration: 10 });
-        });
-
         t.end();
     });
 
@@ -782,13 +744,6 @@ test('camera', (t) => {
                 camera.flyTo({center: 1});
             }, Error, 'throws with non-LngLatLike argument');
             t.end();
-        });
-
-        t.test('does not throw when cameras current zoom is sufficiently greater than passed zoom option', (t)=>{
-            const camera = createCamera({zoom: 22, center:[0, 0]});
-            t.doesNotThrow(()=>camera.flyTo({zoom:10, center:[0, 0]}));
-            t.end();
-
         });
 
         t.test('zooms to specified level', (t) => {
@@ -1051,7 +1006,7 @@ test('camera', (t) => {
                 t.end();
             });
 
-            camera.flyTo({ center: [-170, 0], duration: 20 });
+            camera.flyTo({ center: [-170, 0], duration: 10 });
         });
 
         t.test('pans westward across the antimeridian', (t) => {
@@ -1098,7 +1053,7 @@ test('camera', (t) => {
             let crossedAntimeridian;
 
             camera.on('move', () => {
-                if (fixedLngLat(camera.getCenter(), 10).lng < -170) {
+                if (camera.getCenter().lng < -170) {
                     crossedAntimeridian = true;
                 }
             });
@@ -1152,46 +1107,6 @@ test('camera', (t) => {
 
             const options = { center: [1, 0], zoom: 20, minZoom };
             camera.flyTo(options);
-        });
-
-        t.test('respects transform\'s maxZoom', (t) => {
-
-            const transform = new Transform(2, 10, false);
-            transform.resize(512, 512);
-
-            const camera = new Camera(transform, {});
-
-            camera.on('moveend', () => {
-                t.equalWithPrecision(camera.getZoom(), 10, 1e-10);
-                const { lng, lat } = camera.getCenter();
-                t.equalWithPrecision(lng, 12, 1e-10);
-                t.equalWithPrecision(lat, 34, 1e-10);
-
-                t.end();
-            });
-
-            const flyOptions = { center: [12, 34], zoom: 30};
-            camera.flyTo(flyOptions);
-        });
-
-        t.test('respects transform\'s minZoom', (t) => {
-
-            const transform = new Transform(2, 10, false);
-            transform.resize(512, 512);
-
-            const camera = new Camera(transform, {});
-
-            camera.on('moveend', () => {
-                t.equalWithPrecision(camera.getZoom(), 2, 1e-10);
-                const { lng, lat } = camera.getCenter();
-                t.equalWithPrecision(lng, 12, 1e-10);
-                t.equalWithPrecision(lat, 34, 1e-10);
-
-                t.end();
-            });
-
-            const flyOptions = { center: [12, 34], zoom: 1};
-            camera.flyTo(flyOptions);
         });
 
         t.end();

@@ -214,7 +214,7 @@ class DragPanHandler {
 module.exports = DragPanHandler;
 
 /**
- * Fired when a "drag to pan" interaction starts. See {@link DragPanHandler}.
+ * Fired when a "drag to pan" interaction starts. See [`DragPanHandler`](#DragPanHandler).
  *
  * @event dragstart
  * @memberof Map
@@ -223,7 +223,7 @@ module.exports = DragPanHandler;
  */
 
 /**
- * Fired repeatedly during a "drag to pan" interaction. See {@link DragPanHandler}.
+ * Fired repeatedly during a "drag to pan" interaction. See [`DragPanHandler`](#DragPanHandler).
  *
  * @event drag
  * @memberof Map
@@ -232,7 +232,7 @@ module.exports = DragPanHandler;
  */
 
 /**
- * Fired when a "drag to pan" interaction ends. See {@link DragPanHandler}.
+ * Fired when a "drag to pan" interaction ends. See [`DragPanHandler`](#DragPanHandler).
  *
  * @event dragend
  * @memberof Map
