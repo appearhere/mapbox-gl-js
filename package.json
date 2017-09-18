@@ -5,9 +5,6 @@
   "parentVersion": "0.34.0",
   "main": "dist/mapbox-gl.js",
   "license": "BSD-3-Clause",
-  "publishConfig": {
-    "access": "restricted"
-  },
   "repository": {
     "type": "git",
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
